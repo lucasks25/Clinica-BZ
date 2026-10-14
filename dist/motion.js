@@ -105,3 +105,22 @@ document.querySelectorAll('[data-results-filter]').forEach(button => {
     });
   });
 });
+
+// Restore anchors only after the pinned scene has reached its measured height.
+window.addEventListener('load', () => {
+  Promise.resolve(document.fonts?.ready).then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
+    let saved;
+    if (['127.0.0.1', 'localhost'].includes(location.hostname)) {
+      try { saved = JSON.parse(sessionStorage.getItem('bz-preview-position')); } catch { /* No saved preview position. */ }
+      sessionStorage.removeItem('bz-preview-position');
+    }
+    if (saved) {
+      const block = (saved.id && document.getElementById(saved.id)) || document.querySelector('main').children[saved.index];
+      if (block) window.scrollTo({ top: window.scrollY + block.getBoundingClientRect().top - saved.top, behavior: 'instant' });
+    } else if (location.hash) {
+      let id;
+      try { id = decodeURIComponent(location.hash.slice(1)); } catch { return; }
+      document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'instant' });
+    }
+  })));
+});

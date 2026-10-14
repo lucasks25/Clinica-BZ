@@ -64,7 +64,12 @@ if (['127.0.0.1', 'localhost'].includes(location.hostname)) {
       const response = await fetch('/__revision', { cache: 'no-store' });
       if (!response.ok) return;
       const { version } = await response.json();
-      if (previewRevision && previewRevision !== version && !document.querySelector('dialog[open]')) location.reload();
+      if (previewRevision && previewRevision !== version && !document.querySelector('dialog[open]')) {
+        const blocks = [...document.querySelector('main').children];
+        const block = blocks.find(el => el.getBoundingClientRect().top <= innerHeight * .4 && el.getBoundingClientRect().bottom > innerHeight * .4);
+        if (block) sessionStorage.setItem('bz-preview-position', JSON.stringify({ id: block.id, index: blocks.indexOf(block), top: block.getBoundingClientRect().top }));
+        location.reload();
+      }
       previewRevision = version;
     } catch { /* The local preview may be restarting. */ }
   }, 2500);
@@ -72,25 +77,61 @@ if (['127.0.0.1', 'localhost'].includes(location.hostname)) {
 
 const resultsToggle = document.querySelector('.results-toggle');
 if (resultsToggle) {
-  const disclosure = document.getElementById(resultsToggle.getAttribute('aria-controls'));
+  const preview = document.getElementById(resultsToggle.getAttribute('aria-controls'));
+  const root = resultsToggle.closest('.results-reveal');
+  const panel = preview.querySelector('.real-results-panel');
   resultsToggle.addEventListener('click', () => {
     const expanded = resultsToggle.getAttribute('aria-expanded') !== 'true';
+    preview.style.height = preview.getBoundingClientRect().height + 'px';
+    void preview.offsetHeight;
     resultsToggle.setAttribute('aria-expanded', String(expanded));
-    disclosure.inert = !expanded;
-    disclosure.classList.toggle('is-open', expanded);
-    resultsToggle.innerHTML = (expanded ? 'Ocultar resultados' : 'Veja os resultados reais') + '<span aria-hidden="true">' + (expanded ? '−' : '+') + '</span>';
+    root.classList.toggle('is-expanded', expanded);
+    panel.inert = !expanded;
+    preview.setAttribute('aria-hidden', String(!expanded));
+    requestAnimationFrame(() => {
+      preview.style.height = expanded ? panel.scrollHeight + 'px' : getComputedStyle(preview).getPropertyValue('--results-preview-height');
+    });
+    resultsToggle.innerHTML = (expanded ? 'Recolher resultados' : 'Mostrar resultados reais') + '<span aria-hidden="true">' + (expanded ? '↑' : '↓') + '</span>';
+  });
+  preview.addEventListener('transitionend', event => {
+    if (event.propertyName !== 'height') return;
+    preview.style.height = resultsToggle.getAttribute('aria-expanded') === 'true' ? 'auto' : '';
   });
 }
-const locationPanels = [...document.querySelectorAll('.location-accordions details')];
-const locationImage = document.querySelector('.location-visual img');
-locationPanels.forEach(panel => {
-  panel.addEventListener('toggle', () => {
-    panel.querySelector('summary>span').textContent = panel.open ? '−' : '+';
-    if (!panel.open) return;
-    locationPanels.forEach(other => { if (other !== panel) other.open = false; });
-    if (locationImage) {
-      locationImage.src = panel.dataset.locationImage;
-      locationImage.alt = 'Ambiente da Clínica BZ: ' + panel.querySelector('summary').textContent.replace(/[+−]/g, '').trim();
-    }
+// Keep the original three-card layout, revealing verified excerpts in place.
+document.querySelectorAll('[data-animated-reviews]').forEach(grid => {
+  const cards = [...grid.querySelectorAll('.google-review-card')];
+  const templates = cards.map(card => card.innerHTML);
+  const pause = grid.closest('section').querySelector('.review-pause');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  let visible = false, paused = false, offset = 0, timer;
+  const clear = () => { clearTimeout(timer); timer = undefined; };
+  const schedule = () => {
+    clear();
+    if (!visible || paused || reduced.matches || document.hidden || grid.contains(document.activeElement)) return;
+    timer = setTimeout(() => {
+      offset = (offset + 1) % templates.length;
+      cards.forEach((card, index) => {
+        card.innerHTML = templates[(index + offset) % templates.length];
+        card.animate([{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'translateY(0)' }], {
+          duration: 700, delay: index * 160, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'backwards'
+        });
+      });
+      schedule();
+    }, 5000);
+  };
+  const observer = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; schedule(); }, { threshold: 0.35 });
+  observer.observe(grid);
+  window.addEventListener('scroll', schedule, { passive: true });
+  document.addEventListener('visibilitychange', schedule);
+  reduced.addEventListener('change', () => { cards.forEach(card => card.getAnimations().forEach(animation => animation.cancel())); schedule(); });
+  grid.addEventListener('focusin', clear);
+  grid.addEventListener('focusout', () => queueMicrotask(schedule));
+  pause.addEventListener('click', () => {
+    paused = !paused;
+    pause.textContent = paused ? 'Retomar animação' : 'Pausar animação';
+    pause.setAttribute('aria-pressed', String(paused));
+    if (paused) cards.forEach(card => card.getAnimations().forEach(animation => animation.cancel()));
+    schedule();
   });
 });
