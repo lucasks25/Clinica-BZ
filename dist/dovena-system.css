@@ -131,3 +131,4 @@ body{font-family:var(--font-body);font-size:16px;line-height:1.7;font-weight:300
 @media(max-width:850px){.hero,.hero-content{min-height:860px}.hero-content{padding-top:140px}.hero h1{font-size:72px}.hero-bottom-layout{gap:40px;padding-top:100px}.hero-appointment p{font-size:21px}}
 @media(max-width:600px){.hero,.hero-content{min-height:880px}.hero-content{padding:130px 0 45px}.hero h1{font-size:54px}.hero-bottom-layout{display:block;padding-top:80px}.hero-benefits{gap:20px;margin-bottom:36px}.hero-benefits h3{font-size:17px}.hero-benefits p{font-size:13px}.hero-appointment p{font-size:20px}.hero-photo{object-position:60% center}.hero-shade{background:linear-gradient(90deg,#1c140c9c,#1c140c44),linear-gradient(0deg,#1c140c88,transparent)}}
 @media(prefers-reduced-motion:reduce){.about-copy.is-scroll-reveal .reveal-word{opacity:1;transition:none}}
+.result-img>b:empty,.doctor-photo>b:empty{display:none}
