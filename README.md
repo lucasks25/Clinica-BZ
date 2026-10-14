@@ -18,3 +18,6 @@ python3 -m http.server 4173 --directory dist
 Depois abra `http://localhost:4173`.
 
 Não há etapa de build, dependências de execução ou formulário que simule envio. Os agendamentos abrem o WhatsApp da clínica; a confirmação é feita pela equipe.
+
+
+Ajustes finais: composição compartilhada com largura máxima de 1368 px e seções de 130 px; navegação Inter 14 px, hero Geist 88 px e títulos Geist 48 px. Cards com molduras iguais e imagens completas; rolagem mais lenta e início centralizado. Resultados reais expandem na home. Seção de localização com informações expansíveis e fotos reais; equipe em composição editorial; footer com contatos e colunas. Fotografias ilustrativas de consulta para serviços sem foto específica são geradas com ImageGen; resultados e profissionais vêm do site da clínica.

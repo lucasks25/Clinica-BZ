@@ -69,3 +69,28 @@ if (['127.0.0.1', 'localhost'].includes(location.hostname)) {
     } catch { /* The local preview may be restarting. */ }
   }, 2500);
 }
+
+const resultsToggle = document.querySelector('.results-toggle');
+if (resultsToggle) {
+  const disclosure = document.getElementById(resultsToggle.getAttribute('aria-controls'));
+  resultsToggle.addEventListener('click', () => {
+    const expanded = resultsToggle.getAttribute('aria-expanded') !== 'true';
+    resultsToggle.setAttribute('aria-expanded', String(expanded));
+    disclosure.inert = !expanded;
+    disclosure.classList.toggle('is-open', expanded);
+    resultsToggle.innerHTML = (expanded ? 'Ocultar resultados' : 'Veja os resultados reais') + '<span aria-hidden="true">' + (expanded ? '−' : '+') + '</span>';
+  });
+}
+const locationPanels = [...document.querySelectorAll('.location-accordions details')];
+const locationImage = document.querySelector('.location-visual img');
+locationPanels.forEach(panel => {
+  panel.addEventListener('toggle', () => {
+    panel.querySelector('summary>span').textContent = panel.open ? '−' : '+';
+    if (!panel.open) return;
+    locationPanels.forEach(other => { if (other !== panel) other.open = false; });
+    if (locationImage) {
+      locationImage.src = panel.dataset.locationImage;
+      locationImage.alt = 'Ambiente da Clínica BZ: ' + panel.querySelector('summary').textContent.replace(/[+−]/g, '').trim();
+    }
+  });
+});

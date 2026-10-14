@@ -38,7 +38,7 @@ document.querySelectorAll('[data-pinned-specialties]').forEach(scene => {
       next.disabled = stage.scrollLeft >= stage.scrollWidth - stage.clientWidth - 5;
       return;
     }
-    const naturalImageHeight = cards[0].getBoundingClientRect().width / 1.22;
+    const naturalImageHeight = cards[0].getBoundingClientRect().width / (415.33 / 350.06);
     scene.style.setProperty('--pin-image-height', naturalImageHeight + 'px');
     const textHeight = Math.max(...cards.map(card => card.querySelector('.individual-copy').getBoundingClientRect().height));
     const reserved = scene.querySelector('.pinned-heading').getBoundingClientRect().height + scene.querySelector('.specialties-navigation').getBoundingClientRect().height + textHeight + 120;
@@ -53,10 +53,10 @@ document.querySelectorAll('[data-pinned-specialties]').forEach(scene => {
       return;
     }
     scene.style.setProperty('--pin-image-height', Math.min(naturalImageHeight, availableImageHeight) + 'px');
-    entry = window.innerWidth * 0.92;
+    entry = (window.innerWidth - cards[0].getBoundingClientRect().width) / 2;
     const ending = Math.max(0, track.scrollWidth - window.innerWidth + 80);
     travel = entry + ending;
-    distance = Math.max(window.innerHeight, travel / 2.35);
+    distance = Math.max(window.innerHeight, travel / 1.75);
     scene.style.height = (window.innerHeight + distance) + 'px';
     start = scene.getBoundingClientRect().top + window.scrollY;
     update();
