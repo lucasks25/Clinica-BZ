@@ -124,3 +124,32 @@ window.addEventListener('load', () => {
     }
   })));
 });
+// Reading reveal follows scroll position and remains fully readable without JavaScript.
+const aboutCopy = document.querySelector('.about-copy');
+if (aboutCopy) {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const paragraphs = [...aboutCopy.querySelectorAll('h2,p')];
+  paragraphs.forEach(element => {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => {
+      const fragment = document.createDocumentFragment();
+      node.textContent.split(/(\s+)/).forEach(word => {
+        if (!word.trim()) fragment.append(document.createTextNode(word));
+        else { const span = document.createElement('span'); span.className = 'reveal-word'; span.textContent = word; fragment.append(span); }
+      }); node.replaceWith(fragment);
+    });
+  });
+  let scheduled = false;
+  const reveal = () => {
+    scheduled = false; aboutCopy.classList.toggle('is-scroll-reveal', !reduce.matches);
+    paragraphs.forEach(element => {
+      const words = [...element.querySelectorAll('.reveal-word')];
+      const rect = element.getBoundingClientRect();
+      const progress = Math.max(0, Math.min(1, (innerHeight * .92 - rect.top) / (innerHeight * .42)));
+      words.forEach((word,index) => word.style.setProperty('--word-opacity', String(.22 + .78 * Math.max(0, Math.min(1, progress * 1.8 - index / Math.max(1,words.length) * .8)))));
+    });
+  };
+  addEventListener('scroll', () => { if (!scheduled) { scheduled = true; requestAnimationFrame(reveal); } }, {passive:true});
+  addEventListener('resize', reveal); reduce.addEventListener('change', reveal); reveal();
+}

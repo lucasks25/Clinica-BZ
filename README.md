@@ -20,4 +20,10 @@ Depois abra `http://localhost:4173`.
 Não há etapa de build, dependências de execução ou formulário que simule envio. Os agendamentos abrem o WhatsApp da clínica; a confirmação é feita pela equipe.
 
 
-Ajustes finais: composição compartilhada com largura máxima de 1368 px e seções de 130 px; navegação Inter 14 px, hero Geist 88 px e títulos Geist 48 px. Cards com molduras iguais e imagens completas; rolagem mais lenta e início centralizado. Resultados reais expandem na home. Seção de localização com informações expansíveis e fotos reais; equipe em composição editorial; footer com contatos e colunas. Fotografias ilustrativas de consulta para serviços sem foto específica são geradas com ImageGen; resultados e profissionais vêm do site da clínica.
+A composição usa Geist nos títulos e Inter nos textos e controles. A hero traz título animado, benefícios e agendamento. Os resultados reais têm prévia, expansão e navegação horizontal; os cards de especialidades usam fotos ilustrativas de procedimentos. O texto sobre a clínica ganha contraste durante a rolagem. As três avaliações mantêm a animação automática. A localização apresenta o endereço da unidade na Cidade Dutra.
+
+Para reconstruir as 22 páginas após editar o conteúdo:
+
+```sh
+python3 scripts/build_site.py
+```

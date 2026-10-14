@@ -89,9 +89,9 @@ if (resultsToggle) {
     panel.inert = !expanded;
     preview.setAttribute('aria-hidden', String(!expanded));
     requestAnimationFrame(() => {
-      preview.style.height = expanded ? panel.scrollHeight + 'px' : getComputedStyle(preview).getPropertyValue('--results-preview-height');
+      preview.style.height = matchMedia('(prefers-reduced-motion: reduce)').matches ? (expanded ? 'auto' : '') : (expanded ? panel.scrollHeight + 'px' : getComputedStyle(preview).getPropertyValue('--results-preview-height')); 
     });
-    resultsToggle.innerHTML = (expanded ? 'Recolher resultados' : 'Mostrar resultados reais') + '<span aria-hidden="true">' + (expanded ? '↑' : '↓') + '</span>';
+    resultsToggle.textContent = expanded ? 'Recolher resultados' : 'Mostrar resultados reais';
   });
   preview.addEventListener('transitionend', event => {
     if (event.propertyName !== 'height') return;
@@ -134,4 +134,34 @@ document.querySelectorAll('[data-animated-reviews]').forEach(grid => {
     if (paused) cards.forEach(card => card.getAnimations().forEach(animation => animation.cancel()));
     schedule();
   });
+});
+document.querySelectorAll('.results-reveal').forEach(root => {
+  const previous = root.querySelector('.results-carousel-prev');
+  const next = root.querySelector('.results-carousel-next');
+  const status = root.querySelector('.results-carousel-status');
+  const rails = [...root.querySelectorAll('.result-grid')];
+  const activeRail = () => root.querySelector('[data-results-group]:not([hidden]) .result-grid');
+  const update = () => {
+    const rail = activeRail();
+    if (!rail) return;
+    const width = rail.querySelector('.result-card').getBoundingClientRect().width;
+    const gap = parseFloat(getComputedStyle(rail).gap) || 24;
+    const first = Math.round(rail.scrollLeft / (width + gap)) + 1;
+    const shown = Math.max(1, Math.floor((rail.clientWidth + gap) / (width + gap)));
+    status.textContent = first + '–' + Math.min(rail.children.length, first + shown - 1) + ' de ' + rail.children.length + ' resultados';
+    previous.disabled = rail.scrollLeft < 5;
+    next.disabled = rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 5;
+  };
+  const move = direction => {
+    const rail = activeRail();
+    const stride = rail.querySelector('.result-card').getBoundingClientRect().width + (parseFloat(getComputedStyle(rail).gap) || 24);
+    rail.scrollBy({ left: direction * stride, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+  };
+  previous.addEventListener('click', () => move(-1));
+  next.addEventListener('click', () => move(1));
+  rails.forEach(rail => rail.addEventListener('scroll', update, { passive: true }));
+  root.querySelectorAll('[data-results-filter]').forEach(button => button.addEventListener('click', () => requestAnimationFrame(update)));
+  root.querySelector('.results-toggle').addEventListener('click', () => requestAnimationFrame(update));
+  window.addEventListener('resize', update);
+  update();
 });
